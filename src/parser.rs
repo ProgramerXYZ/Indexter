@@ -1,13 +1,11 @@
-#![allow(unused)]
 
-use std::vec;
 use std::path::PathBuf;
 
 pub enum CommandKind {
     Index,
     Search
 }
-
+#[allow(unused)]
 pub struct Cmd {
     pub command: CommandKind,
     pub path: PathBuf,
@@ -28,6 +26,6 @@ pub fn detect_command(whole_cmd: &[String])-> Result<CommandKind, String>{
     }
 }
 pub fn argument_reader(whole_cmd: &[String])-> PathBuf{
-    let location_dir = PathBuf::from(whole_cmd[2]);
+    let location_dir = PathBuf::from(&whole_cmd[2]);
     return location_dir;
 }
