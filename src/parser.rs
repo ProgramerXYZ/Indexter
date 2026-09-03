@@ -2,8 +2,9 @@
 use std::path::PathBuf;
 
 pub enum CommandKind {
+    Init,
     Index,
-    Search
+    Search,
 }
 #[allow(unused)]
 pub struct Cmd {
@@ -21,6 +22,7 @@ pub fn detect_command(whole_cmd: &[String])-> Result<CommandKind, String>{
     match whole_cmd.get(1).map(|s| s.as_str()) {
         Some("index") =>  Ok(CommandKind::Index),
         Some("search") => Ok(CommandKind::Search),
+        Some("init") => Ok(CommandKind::Init),
         Some(cmd) => Err(format!("Unknown command '{}'", cmd)),
         None => Err(String::from("No command provided")),
     }
