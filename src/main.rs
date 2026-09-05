@@ -1,14 +1,16 @@
 #![warn(unused_variables)]
 mod parser;
-mod fs;
+mod cmds;
 
 use std::{env, path::{Path, PathBuf}}; 
 
 use crate::parser::{CommandKind, argument_reader, Cmd};
 
 
+
+
 fn inp() -> Vec<String> {
-    env::args().skip(1).collect()
+    env::args().collect()
 }
 
 
@@ -37,14 +39,18 @@ fn main() {
         if cmd.path.as_os_str().is_empty()  {
             r_path=PathBuf::from(".");
         }
-        else if !cmd.path.as_os_str().is_empty() {
+        else{
             r_path=cmd.path;
         }
 
         
 
+        // match cmd.command {
+        //     CommandKind::Init => cmds::init(&r_path),
+        //     CommandKind::Index 
+        // }
 
-
+        cmds::init(&r_path);
 
 
            

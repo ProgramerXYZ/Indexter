@@ -28,6 +28,9 @@ pub fn detect_command(whole_cmd: &[String])-> Result<CommandKind, String>{
     }
 }
 pub fn argument_reader(whole_cmd: &[String])-> PathBuf{
-    let location_dir = PathBuf::from(&whole_cmd[2]);
+    let location_dir={match whole_cmd.get(2) {
+        Some(path_str) => PathBuf::from(path_str),
+        None => PathBuf::new(), // Returns an empty PathBuf so main.rs can handle it!
+    }};
     return location_dir;
 }
