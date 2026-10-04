@@ -6,3 +6,9 @@ edition = "2024"
 [dependencies]
 indicatif = "0.17"
 rusqlite = { version = "0.40.2", features = ["bundled"] }
+
+[profile.dev]
+opt-level=0
+
+[profile.release]
+opt-level=3

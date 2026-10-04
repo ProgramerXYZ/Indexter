@@ -43,17 +43,23 @@ fn main() {
             r_path=cmd.path;
         }
 
-        
+        let pass_path:PathBuf;
+        if r_path.as_path() == Path::new(".") {
+            // convert it
+            pass_path = std::path::absolute(&r_path).unwrap();
+        } else {
+            pass_path = r_path;
+        }
 
         // match cmd.command {
         //     CommandKind::Init => cmds::init(&r_path),
         //     CommandKind::Index 
         // }
 
-        cmds::init(&r_path);
+        cmds::init(&pass_path);
 
 
            
-
+        drop(pass_path);
 
 }
