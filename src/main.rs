@@ -9,13 +9,13 @@ use crate::parser::{CommandKind, argument_reader, Cmd};
 
 
 
-fn inp() -> Vec<String> {
+fn input_() -> Vec<String> {
     env::args().collect()
 }
 
 
 fn main() {
-    let input = inp();
+    let input = input_();
      
     let which_command: Result<CommandKind, String> = parser::detect_command(&input);
 

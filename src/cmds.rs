@@ -2,13 +2,13 @@
 #![warn(unused_variables)]
 #![warn(unused_imports)]
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::fs;
-use rusqlite::{Connection, params};
+use rusqlite::{Connection, Transaction, params};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::time::Duration;
 
-fn index_dir(path: &Path, conn: &Connection, pb: &ProgressBar) {
+fn index_dir(path: &Path, tx: &Transaction, pb: &ProgressBar , err_log: &Connection) {
     let entries = match fs::read_dir(path) {
         Ok(e) => e,
         Err(_) => return, // Skip directories with permission issues
@@ -50,13 +50,13 @@ fn index_dir(path: &Path, conn: &Connection, pb: &ProgressBar) {
 
             let path_dir = path.is_dir();
 
-            let _ = conn.execute(
+            let _ = tx.execute(
                 "INSERT OR IGNORE INTO entries (path, is_dir, size, last_modified) VALUES (?1, ?2,?3, ?4)",
                 params![path.to_str().unwrap_or(""), path_dir.clone() as i32, size, last_modified  ]
             );
 
             if path_dir {
-                index_dir(&path, conn, pb);
+                 index_dir(&path, tx, pb, err_log);
             }
         }
     }
@@ -75,7 +75,8 @@ pub fn init(path: &Path) {
     );
     pb.set_message("Preparing database...");
 
-    let conn = Connection::open(".indexter/indexter.db").unwrap();
+    let mut conn = Connection::open(".indexter/indexter.db").unwrap();
+    let logs_conn = Connection::open(".indexter/indexter-logs.db").unwrap();
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS entries(
@@ -87,19 +88,34 @@ pub fn init(path: &Path) {
         )",
         [],
     ).unwrap();
+    
+    
     conn.execute(
         "CREATE TABLE IF NOT EXISTS index_info(
             root_path TEXT NOT NULL
         )",
         [],
     ).unwrap();
+
+    logs_conn.execute(
+            "CREATE TABLE IF NOT EXISTS index_errors (
+                id INTEGER PRIMARY KEY,
+                path TEXT,
+                operation TEXT NOT NULL,
+                error TEXT NOT NULL,
+                occurred_at INTEGER NOT NULL
+        )", []).unwrap();
+    
     conn.execute(
         "INSERT INTO index_info (root_path) VALUES (?1)",
         params![path.to_str().unwrap_or("")],
     ).unwrap();
 
+    let tx = conn.transaction().unwrap();
+
     // Pass the spinner into the recursive walker to update the text inline
-    index_dir(path, &conn, &pb);
+    index_dir(path, &tx, &pb, &logs_conn);
+    tx.commit().unwrap();
 
     // Clear everything out and display the final message on that line
     pb.finish_with_message("🎉 Indexing complete!");

@@ -12,3 +12,5 @@ opt-level=0
 
 [profile.release]
 opt-level=3
+debug=false
+overflow-checks= true
